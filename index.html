@@ -180,12 +180,45 @@
   }
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+  header { position: relative; }
+  .gear {
+    position: absolute; right: 16px; top: calc(env(safe-area-inset-top, 0px) + 20px);
+    width: 44px; height: 44px; border-radius: 14px; border: 1.5px solid #3a3a46;
+    background: transparent; color: #fff; cursor: pointer; display: grid; place-items: center;
+  }
+  .gear:active { background: #24242c; }
+  .gear svg { width: 22px; height: 22px; }
+
+  .overlay {
+    position: fixed; inset: 0; background: rgba(18,18,22,.55); z-index: 20;
+    display: none; align-items: flex-end; justify-content: center;
+  }
+  .overlay.show { display: flex; }
+  .sheet {
+    background: var(--paper); width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto;
+    border-radius: 22px 22px 0 0; padding: 20px 18px calc(env(safe-area-inset-bottom, 0px) + 20px);
+    animation: up .22s ease-out;
+  }
+  @keyframes up { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
+  .sheet h2 { margin: 0 0 4px; font-size: 20px; }
+  .sheet .sub { margin: 0 0 16px; color: var(--muted); font-size: 13.5px; line-height: 1.45; }
+  .sheet .row2 { margin-bottom: 0; }
+  .sheet .unit { position: relative; }
+  .sheet .unit span { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-weight: 600; pointer-events: none; }
+  .sheet .unit.rp span { right: auto; left: 14px; }
+  .sheet .unit.rp .input { padding-left: 44px; }
+  .sheet .actions { margin-top: 20px; }
+  .err { color: var(--red); font-size: 13px; min-height: 18px; margin-top: 8px; }
+
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body>
 
 <header>
+  <button class="gear" id="openSet" type="button" aria-label="Pengaturan potongan">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01A1.7 1.7 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01A1.7 1.7 0 0 0 20.91 10H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1z"/></svg>
+  </button>
   <h1>Kalkulator Tiktok</h1>
   <p>Hitung untung bersih jualan di TikTok Shop, setelah semua potongan.</p>
 </header>
@@ -219,7 +252,7 @@
 
     <label class="toggle" id="tgPre">
       <input type="checkbox" id="pre">
-      <span class="t">Pre order<small>Potongan 3% dari harga jual</small></span>
+      <span class="t">Pre order<small id="preHint"></small></span>
     </label>
 
     <label class="toggle" id="tgAff">
@@ -228,7 +261,7 @@
     </label>
     <div class="aff-box" id="affBox">
       <div class="pct">
-        <input class="input" id="affPct" inputmode="decimal" placeholder="Contoh: 1" value="1" autocomplete="off">
+        <input class="input" id="affPct" inputmode="decimal" placeholder="Contoh: 1" autocomplete="off">
         <span>%</span>
       </div>
     </div>
@@ -255,18 +288,56 @@
   </div>
 </main>
 
+<div class="overlay" id="overlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <h2 id="setTitle">Pengaturan potongan</h2>
+    <p class="sub">Sesuaikan kalau TikTok mengubah tarif. Isi 0 untuk menyembunyikan potongan dari perhitungan.</p>
+
+    <div class="row2">
+      <div class="field"><label class="lbl" for="s_platform">Komisi platform</label>
+        <div class="unit"><input class="input" id="s_platform" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
+      <div class="field"><label class="lbl" for="s_dinamis">Komisi dinamis</label>
+        <div class="unit"><input class="input" id="s_dinamis" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label class="lbl" for="s_pph22">PPh Pasal 22</label>
+        <div class="unit"><input class="input" id="s_pph22" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
+      <div class="field"><label class="lbl" for="s_preorder">Potongan pre order</label>
+        <div class="unit"><input class="input" id="s_preorder" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label class="lbl" for="s_pemrosesan">Biaya pemrosesan</label>
+        <div class="unit rp"><span>Rp</span><input class="input" id="s_pemrosesan" inputmode="numeric" autocomplete="off"></div></div>
+      <div class="field"><label class="lbl" for="s_affiliasi">Komisi afiliasi (awal)</label>
+        <div class="unit"><input class="input" id="s_affiliasi" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
+    </div>
+    <div class="err" id="setErr" role="alert"></div>
+
+    <div class="actions">
+      <button class="btn ghost" id="setDefault" type="button">Standar</button>
+      <button class="btn ghost" id="setCancel" type="button">Batal</button>
+      <button class="btn" id="setSave" type="button">Simpan</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status"></div>
 
 <script>
-/* ====== Tarif TikTok — ubah di sini kalau tarif berubah ====== */
-const TARIF = {
-  platform: 0.10,   // Komisi platform
-  dinamis: 0.065,   // Komisi dinamis
-  pph22: 0.005,     // PPh Pasal 22
-  preorder: 0.03,   // Potongan pre order
-  pemrosesan: 1250  // Biaya pemrosesan (Rp per pesanan)
-};
-/* ============================================================ */
+/* ====== Tarif standar TikTok (angka dalam persen, kecuali pemrosesan dalam Rp) ====== */
+const STANDAR = { platform: 10, dinamis: 6.5, pph22: 0.5, preorder: 3, pemrosesan: 1250, affiliasi: 1 };
+/* ================================================================================== */
+
+let CFG = muatCfg();
+function muatCfg() {
+  try {
+    const s = JSON.parse(localStorage.getItem("tarif-tiktok") || "null");
+    const out = { ...STANDAR };
+    if (s && typeof s === "object") for (const k in STANDAR) if (typeof s[k] === "number" && isFinite(s[k]) && s[k] >= 0) out[k] = s[k];
+    return out;
+  } catch (e) { return { ...STANDAR }; }
+}
+function simpanCfg() { try { localStorage.setItem("tarif-tiktok", JSON.stringify(CFG)); } catch (e) {} }
 
 const $ = (id) => document.getElementById(id);
 const rp = (n) => "Rp " + Math.round(Math.abs(n)).toLocaleString("id-ID");
@@ -284,14 +355,14 @@ function hitung() {
   const pre = $("pre").checked, aff = $("aff").checked;
   const ar = aff ? affRate() : 0;
 
-  const potTikTok = [
-    { label: `Komisi platform (${pctText(TARIF.platform)}%)`, amt: Math.round(harga * TARIF.platform), rate: TARIF.platform },
-    { label: `Komisi dinamis (${pctText(TARIF.dinamis)}%)`, amt: Math.round(harga * TARIF.dinamis), rate: TARIF.dinamis }
-  ];
-  if (aff) potTikTok.push({ label: `Komisi afiliasi (${pctText(ar)}%)`, amt: Math.round(harga * ar), rate: ar });
-  potTikTok.push({ label: "Biaya pemrosesan", amt: TARIF.pemrosesan, fixed: true });
-  potTikTok.push({ label: `PPh Pasal 22 (${pctText(TARIF.pph22)}%)`, amt: Math.round(harga * TARIF.pph22), rate: TARIF.pph22 });
-  if (pre) potTikTok.push({ label: `Potongan pre order (${pctText(TARIF.preorder)}%)`, amt: Math.round(harga * TARIF.preorder), rate: TARIF.preorder });
+  const pf = CFG.platform / 100, dn = CFG.dinamis / 100, pph = CFG.pph22 / 100, po = CFG.preorder / 100, proses = CFG.pemrosesan;
+  const potTikTok = [];
+  if (pf > 0) potTikTok.push({ label: `Komisi platform (${pctText(pf)}%)`, amt: Math.round(harga * pf), rate: pf });
+  if (dn > 0) potTikTok.push({ label: `Komisi dinamis (${pctText(dn)}%)`, amt: Math.round(harga * dn), rate: dn });
+  if (aff && ar > 0) potTikTok.push({ label: `Komisi afiliasi (${pctText(ar)}%)`, amt: Math.round(harga * ar), rate: ar });
+  if (proses > 0) potTikTok.push({ label: "Biaya pemrosesan", amt: Math.round(proses), fixed: true });
+  if (pph > 0) potTikTok.push({ label: `PPh Pasal 22 (${pctText(pph)}%)`, amt: Math.round(harga * pph), rate: pph });
+  if (pre && po > 0) potTikTok.push({ label: `Potongan pre order (${pctText(po)}%)`, amt: Math.round(harga * po), rate: po });
 
   const totalTikTok = potTikTok.reduce((s, x) => s + x.amt, 0);
   const cair = harga - totalTikTok;
@@ -301,7 +372,7 @@ function hitung() {
 
   // Harga jual minimal agar tidak rugi (untung = 0)
   const totalRate = potTikTok.reduce((s, x) => s + (x.rate || 0), 0);
-  const tetap = TARIF.pemrosesan + modal + totalPribadi;
+  const tetap = Math.round(proses) + modal + totalPribadi;
   const minJual = totalRate < 1 ? Math.ceil(tetap / (1 - totalRate)) : null;
 
   return { harga, modal, bll, ops, potTikTok, totalTikTok, cair, totalPribadi, untung, margin, minJual };
@@ -357,10 +428,50 @@ $("aff").addEventListener("change", () => {
 
 $("reset").addEventListener("click", () => {
   ["nama", "modal", "harga", "bll", "ops"].forEach(id => $(id).value = "");
-  $("pre").checked = false; $("aff").checked = false; $("affPct").value = "1";
+  $("pre").checked = false; $("aff").checked = false; $("affPct").value = fmtPct(CFG.affiliasi);
   $("tgPre").classList.remove("on"); $("tgAff").classList.remove("on"); $("affBox").classList.remove("show");
   render();
   window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+/* ---- Pengaturan ---- */
+const fmtPct = (n) => String(Math.round(n * 1000) / 1000).replace(".", ",");
+function terapkanCfgKeUI() {
+  $("preHint").textContent = `Potongan ${fmtPct(CFG.preorder)}% dari harga jual`;
+}
+function isiFormSetting(c) {
+  ["platform", "dinamis", "pph22", "preorder", "affiliasi"].forEach(k => $("s_" + k).value = fmtPct(c[k]));
+  $("s_pemrosesan").value = Math.round(c.pemrosesan).toLocaleString("id-ID");
+  $("setErr").textContent = "";
+}
+function bukaSetting() { isiFormSetting(CFG); $("overlay").classList.add("show"); }
+function tutupSetting() { $("overlay").classList.remove("show"); }
+$("openSet").addEventListener("click", bukaSetting);
+$("setCancel").addEventListener("click", tutupSetting);
+$("overlay").addEventListener("click", (e) => { if (e.target === $("overlay")) tutupSetting(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") tutupSetting(); });
+$("setDefault").addEventListener("click", () => isiFormSetting(STANDAR));
+$("s_pemrosesan").addEventListener("input", (e) => {
+  const dg = e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+  e.target.value = dg ? parseInt(dg, 10).toLocaleString("id-ID") : "";
+});
+$("setSave").addEventListener("click", () => {
+  const baru = {};
+  for (const k of ["platform", "dinamis", "pph22", "preorder", "affiliasi"]) {
+    const raw = $("s_" + k).value.trim().replace(",", ".");
+    const v = raw === "" ? 0 : Number(raw);
+    if (!isFinite(v) || v < 0 || v > 100) { $("setErr").textContent = "Persentase harus berupa angka antara 0 sampai 100."; $("s_" + k).focus(); return; }
+    baru[k] = v;
+  }
+  baru.pemrosesan = parseInt(($("s_pemrosesan").value || "").replace(/\D/g, ""), 10) || 0;
+  const total = baru.platform + baru.dinamis + baru.pph22 + baru.preorder + baru.affiliasi;
+  if (total >= 100) { $("setErr").textContent = "Total persentase potongan tidak boleh 100% atau lebih."; return; }
+  const affLama = CFG.affiliasi;
+  CFG = baru; simpanCfg();
+  // kalau kolom afiliasi belum diubah manual, ikut nilai awal yang baru
+  if (affRate() * 100 === affLama || !$("affPct").value) $("affPct").value = fmtPct(CFG.affiliasi);
+  terapkanCfgKeUI(); tutupSetting(); render();
+  toast("Pengaturan tersimpan");
 });
 
 /* ---- Toast ---- */
@@ -531,6 +642,8 @@ if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 }
 
+$("affPct").value = fmtPct(CFG.affiliasi);
+terapkanCfgKeUI();
 render();
 </script>
 </body>
