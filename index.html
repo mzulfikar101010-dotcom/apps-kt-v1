@@ -395,11 +395,11 @@ function render() {
   d.potTikTok.forEach(x => h += `<div class="r neg"><span>${x.label}</span><span class="v">${rpNeg(x.amt)}</span></div>`);
   h += `<div class="r bold neg"><span style="color:var(--ink)">Total potongan TikTok</span><span class="v">${rpNeg(d.totalTikTok)}</span></div>`;
   h += `<div class="r bold band"><span>Cair</span><span class="v" style="color:var(--ink)">${rp(d.cair)}</span></div>`;
-  h += `<div class="sec">MODAL &amp; POTONGAN PRIBADI</div>`;
-  h += `<div class="r neg"><span>Modal barang</span><span class="v">${rpNeg(d.modal)}</span></div>`;
+  h += `<div class="sec">POTONGAN PRIBADI</div>`;
   h += `<div class="r neg"><span>Biaya BLL</span><span class="v">${rpNeg(d.bll)}</span></div>`;
   h += `<div class="r neg"><span>Biaya operasional</span><span class="v">${rpNeg(d.ops)}</span></div>`;
   h += `<div class="r bold neg"><span style="color:var(--ink)">Total potongan pribadi</span><span class="v">${rpNeg(d.totalPribadi)}</span></div>`;
+  h += `<div class="r neg"><span>Modal barang</span><span class="v">${rpNeg(d.modal)}</span></div>`;
   h += `<div class="final"><div class="l"><b>${loss ? "Rugi bersih" : "Untung bersih"}</b><small>Cair − modal − potongan pribadi</small></div>
         <div class="amt ${loss ? "loss" : ""}">${loss ? "- " : ""}${rp(d.untung)}</div></div>`;
   h += `<div class="foot">Margin <b>${marginTxt}%</b> dari harga jual${d.minJual ? ` · Harga jual minimal agar tidak rugi: <b>${rp(d.minJual)}</b>` : ""}</div>`;
@@ -497,11 +497,11 @@ function buatGambar(d, nama) {
   d.potTikTok.forEach(x => rows.push({ t: "row", l: x.label, r: rpNeg(x.amt), neg: true }));
   rows.push({ t: "row", l: "Total potongan TikTok", r: rpNeg(d.totalTikTok), neg: true, bold: true });
   rows.push({ t: "row", l: "Cair", r: rp(d.cair), bold: true, band: true });
-  rows.push({ t: "sec", l: "MODAL & POTONGAN PRIBADI" });
-  rows.push({ t: "row", l: "Modal barang", r: rpNeg(d.modal), neg: true });
+  rows.push({ t: "sec", l: "POTONGAN PRIBADI" });
   rows.push({ t: "row", l: "Biaya BLL", r: rpNeg(d.bll), neg: true });
   rows.push({ t: "row", l: "Biaya operasional", r: rpNeg(d.ops), neg: true });
   rows.push({ t: "row", l: "Total potongan pribadi", r: rpNeg(d.totalPribadi), neg: true, bold: true });
+  rows.push({ t: "row", l: "Modal barang", r: rpNeg(d.modal), neg: true });
 
   const HEAD = 96, SEC = 40, FINAL = 92, FOOT = 64;
   const bodyH = rows.reduce((s, r) => s + (r.t === "sec" ? SEC : ROW), 0);
