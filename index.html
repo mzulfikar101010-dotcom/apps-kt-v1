@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kalkulator Tiktok</title>
+<meta name="theme-color" content="#121216">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kalkulator Tiktok">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+  :root {
+    --ink: #121216;
+    --paper: #fffdf6;
+    --paper-2: #f3ecd9;
+    --line: #e4dcc3;
+    --muted: #7a7561;
+    --red: #c4372b;
+    --green: #2a8a4a;
+    --cyan: #25f4ee;
+    --pink: #fe2c55;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; }
+  body {
+    font-family: var(--sans);
+    background: var(--ink);
+    color: var(--ink);
+    min-height: 100vh;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  header {
+    padding: calc(env(safe-area-inset-top, 0px) + 22px) 20px 26px;
+    color: #fff;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-shadow: -2px -1px 0 var(--cyan), 2px 1px 0 var(--pink);
+  }
+  header p { margin: 8px 0 0; color: #b9b9c4; font-size: 14px; }
+
+  main {
+    background: var(--paper);
+    border-radius: 26px 26px 0 0;
+    min-height: 70vh;
+    padding: 22px 18px 40px;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; }
+
+  .field { margin-bottom: 14px; }
+  label.lbl {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #3d3a2e;
+  }
+  .input {
+    width: 100%;
+    font: inherit;
+    font-size: 17px;
+    padding: 13px 14px;
+    border: 1.5px solid var(--line);
+    background: #fff;
+    border-radius: 12px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .input:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(37,244,238,.35); }
+  .money { position: relative; }
+  .money span {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 15px; color: var(--muted); font-weight: 600; pointer-events: none;
+  }
+  .money .input { padding-left: 44px; font-variant-numeric: tabular-nums; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .group-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin: 22px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed var(--line);
+  }
+
+  .toggle {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--line);
+    background: #fff;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle input { width: 22px; height: 22px; accent-color: var(--ink); flex: none; margin: 0; }
+  .toggle .t { flex: 1; font-size: 15px; font-weight: 600; }
+  .toggle .t small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .toggle.on { border-color: var(--ink); }
+  .aff-box { display: none; margin: -2px 0 12px; }
+  .aff-box.show { display: block; }
+  .pct { position: relative; }
+  .pct span { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-weight: 600; }
+
+  /* ---- Struk hasil ---- */
+  .receipt {
+    margin-top: 26px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 6px 16px 16px;
+    box-shadow: 0 0 0 4px var(--paper), 0 0 0 5px var(--line);
+  }
+  .receipt .name {
+    font-size: 17px; font-weight: 800; padding: 12px 0 4px; word-break: break-word;
+  }
+  .r {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 15px;
+  }
+  .r .v { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 500; }
+  .r.neg .v { color: var(--red); }
+  .r.bold { font-weight: 800; }
+  .r.bold .v { font-weight: 800; }
+  .r.band { background: var(--paper-2); margin: 0 -16px; padding: 12px 16px; border-bottom: 1px dashed var(--line); }
+  .sec {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    text-align: right; padding: 16px 0 4px; letter-spacing: .06em;
+  }
+  .final { padding: 16px 0 4px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .final .l b { font-size: 18px; display: block; }
+  .final .l small { color: var(--muted); font-size: 12px; }
+  .final .amt { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--green); white-space: nowrap; }
+  .final .amt.loss { color: var(--red); }
+  .foot { font-size: 12.5px; color: var(--muted); border-top: 1px dashed var(--line); margin-top: 10px; padding-top: 10px; line-height: 1.5; }
+  .foot b { color: var(--ink); }
+  .empty { text-align: center; color: var(--muted); padding: 30px 10px; font-size: 14px; }
+
+  .actions { display: flex; gap: 10px; margin-top: 16px; }
+  button.btn {
+    flex: 1; font: inherit; font-weight: 700; font-size: 16px;
+    padding: 15px; border-radius: 14px; border: 0; cursor: pointer;
+    background: var(--ink); color: #fff;
+    box-shadow: -3px -2px 0 var(--cyan), 3px 2px 0 var(--pink);
+  }
+  button.btn:active { transform: translateY(1px); }
+  button.btn.ghost { background: transparent; color: var(--ink); box-shadow: none; border: 1.5px solid var(--line); flex: 0 0 auto; padding: 15px 18px; }
+
+  .install {
+    display: none;
+    margin: 0 0 18px; padding: 12px 14px; border-radius: 12px;
+    background: var(--paper-2); font-size: 13.5px; line-height: 1.45;
+    position: relative;
+  }
+  .install.show { display: block; }
+  .install button.x { position: absolute; top: 6px; right: 8px; border: 0; background: none; font-size: 18px; color: var(--muted); cursor: pointer; }
+  .install .go { margin-top: 8px; font: inherit; font-weight: 700; padding: 8px 14px; border-radius: 10px; border: 0; background: var(--ink); color: #fff; display: none; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+    transform: translate(-50%, 20px); opacity: 0;
+    background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 12px;
+    font-size: 14px; transition: .25s; pointer-events: none; max-width: 90%; text-align: center; z-index: 10;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Kalkulator Tiktok</h1>
+  <p>Hitung untung bersih jualan di TikTok Shop, setelah semua potongan.</p>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <div class="install" id="install">
+      <button class="x" id="installClose" aria-label="Tutup">×</button>
+      <span id="installText"></span>
+      <button class="go" id="installBtn">Pasang aplikasi</button>
+    </div>
+
+    <div class="field">
+      <label class="lbl" for="nama">Nama produk</label>
+      <input class="input" id="nama" type="text" placeholder="Contoh: Kaos Polos Hitam L" autocomplete="off">
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label class="lbl" for="modal">Modal barang</label>
+        <div class="money"><span>Rp</span><input class="input" id="modal" inputmode="numeric" placeholder="0" autocomplete="off"></div>
+      </div>
+      <div class="field">
+        <label class="lbl" for="harga">Harga jual</label>
+        <div class="money"><span>Rp</span><input class="input" id="harga" inputmode="numeric" placeholder="0" autocomplete="off"></div>
+      </div>
+    </div>
+
+    <div class="group-title">Potongan TikTok (opsional)</div>
+
+    <label class="toggle" id="tgPre">
+      <input type="checkbox" id="pre">
+      <span class="t">Pre order<small>Potongan 3% dari harga jual</small></span>
+    </label>
+
+    <label class="toggle" id="tgAff">
+      <input type="checkbox" id="aff">
+      <span class="t">Komisi afiliasi<small>Atur persentasenya sendiri</small></span>
+    </label>
+    <div class="aff-box" id="affBox">
+      <div class="pct">
+        <input class="input" id="affPct" inputmode="decimal" placeholder="Contoh: 1" value="1" autocomplete="off">
+        <span>%</span>
+      </div>
+    </div>
+
+    <div class="group-title">Potongan pribadi</div>
+    <div class="row2">
+      <div class="field">
+        <label class="lbl" for="bll">Biaya BLL</label>
+        <div class="money"><span>Rp</span><input class="input" id="bll" inputmode="numeric" placeholder="0" autocomplete="off"></div>
+      </div>
+      <div class="field">
+        <label class="lbl" for="ops">Biaya operasional</label>
+        <div class="money"><span>Rp</span><input class="input" id="ops" inputmode="numeric" placeholder="0" autocomplete="off"></div>
+      </div>
+    </div>
+
+    <div class="receipt" id="receipt"></div>
+
+    <div class="actions">
+      <button class="btn ghost" id="reset" type="button">Reset</button>
+      <button class="btn" id="save" type="button">Simpan gambar</button>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ====== Tarif TikTok — ubah di sini kalau tarif berubah ====== */
+const TARIF = {
+  platform: 0.10,   // Komisi platform
+  dinamis: 0.065,   // Komisi dinamis
+  pph22: 0.005,     // PPh Pasal 22
+  preorder: 0.03,   // Potongan pre order
+  pemrosesan: 1250  // Biaya pemrosesan (Rp per pesanan)
+};
+/* ============================================================ */
+
+const $ = (id) => document.getElementById(id);
+const rp = (n) => "Rp " + Math.round(Math.abs(n)).toLocaleString("id-ID");
+const rpNeg = (n) => "- " + rp(n);
+const pctText = (x) => (Math.round(x * 1000) / 10).toString().replace(".", ",");
+
+function num(id) { return parseInt(($(id).value || "").replace(/\D/g, ""), 10) || 0; }
+function affRate() {
+  const v = parseFloat(($("affPct").value || "").replace(",", "."));
+  return isFinite(v) && v > 0 ? Math.min(v, 100) / 100 : 0;
+}
+
+function hitung() {
+  const harga = num("harga"), modal = num("modal"), bll = num("bll"), ops = num("ops");
+  const pre = $("pre").checked, aff = $("aff").checked;
+  const ar = aff ? affRate() : 0;
+
+  const potTikTok = [
+    { label: `Komisi platform (${pctText(TARIF.platform)}%)`, amt: Math.round(harga * TARIF.platform), rate: TARIF.platform },
+    { label: `Komisi dinamis (${pctText(TARIF.dinamis)}%)`, amt: Math.round(harga * TARIF.dinamis), rate: TARIF.dinamis }
+  ];
+  if (aff) potTikTok.push({ label: `Komisi afiliasi (${pctText(ar)}%)`, amt: Math.round(harga * ar), rate: ar });
+  potTikTok.push({ label: "Biaya pemrosesan", amt: TARIF.pemrosesan, fixed: true });
+  potTikTok.push({ label: `PPh Pasal 22 (${pctText(TARIF.pph22)}%)`, amt: Math.round(harga * TARIF.pph22), rate: TARIF.pph22 });
+  if (pre) potTikTok.push({ label: `Potongan pre order (${pctText(TARIF.preorder)}%)`, amt: Math.round(harga * TARIF.preorder), rate: TARIF.preorder });
+
+  const totalTikTok = potTikTok.reduce((s, x) => s + x.amt, 0);
+  const cair = harga - totalTikTok;
+  const totalPribadi = bll + ops;
+  const untung = cair - modal - totalPribadi;
+  const margin = harga > 0 ? (untung / harga) * 100 : 0;
+
+  // Harga jual minimal agar tidak rugi (untung = 0)
+  const totalRate = potTikTok.reduce((s, x) => s + (x.rate || 0), 0);
+  const tetap = TARIF.pemrosesan + modal + totalPribadi;
+  const minJual = totalRate < 1 ? Math.ceil(tetap / (1 - totalRate)) : null;
+
+  return { harga, modal, bll, ops, potTikTok, totalTikTok, cair, totalPribadi, untung, margin, minJual };
+}
+
+function render() {
+  const d = hitung();
+  const nama = $("nama").value.trim();
+  const box = $("receipt");
+  if (d.harga <= 0) {
+    box.innerHTML = '<div class="empty">Isi harga jual untuk melihat rincian potongan dan untung bersih.</div>';
+    return d;
+  }
+  const loss = d.untung < 0;
+  const marginTxt = (Math.round(d.margin * 10) / 10).toString().replace(".", ",");
+  let h = "";
+  if (nama) h += `<div class="name"></div>`;
+  h += `<div class="r bold"><span>Harga jual</span><span class="v">${rp(d.harga)}</span></div>`;
+  h += `<div class="sec">POTONGAN TIKTOK</div>`;
+  d.potTikTok.forEach(x => h += `<div class="r neg"><span>${x.label}</span><span class="v">${rpNeg(x.amt)}</span></div>`);
+  h += `<div class="r bold neg"><span style="color:var(--ink)">Total potongan TikTok</span><span class="v">${rpNeg(d.totalTikTok)}</span></div>`;
+  h += `<div class="r bold band"><span>Cair</span><span class="v" style="color:var(--ink)">${rp(d.cair)}</span></div>`;
+  h += `<div class="sec">MODAL &amp; POTONGAN PRIBADI</div>`;
+  h += `<div class="r neg"><span>Modal barang</span><span class="v">${rpNeg(d.modal)}</span></div>`;
+  h += `<div class="r neg"><span>Biaya BLL</span><span class="v">${rpNeg(d.bll)}</span></div>`;
+  h += `<div class="r neg"><span>Biaya operasional</span><span class="v">${rpNeg(d.ops)}</span></div>`;
+  h += `<div class="r bold neg"><span style="color:var(--ink)">Total potongan pribadi</span><span class="v">${rpNeg(d.totalPribadi)}</span></div>`;
+  h += `<div class="final"><div class="l"><b>${loss ? "Rugi bersih" : "Untung bersih"}</b><small>Cair − modal − potongan pribadi</small></div>
+        <div class="amt ${loss ? "loss" : ""}">${loss ? "- " : ""}${rp(d.untung)}</div></div>`;
+  h += `<div class="foot">Margin <b>${marginTxt}%</b> dari harga jual${d.minJual ? ` · Harga jual minimal agar tidak rugi: <b>${rp(d.minJual)}</b>` : ""}</div>`;
+  box.innerHTML = h;
+  if (nama) box.querySelector(".name").textContent = nama;
+  return d;
+}
+
+/* ---- Input uang: otomatis pakai titik ribuan ---- */
+["modal", "harga", "bll", "ops"].forEach(id => {
+  $(id).addEventListener("input", (e) => {
+    const digits = e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+    e.target.value = digits ? parseInt(digits, 10).toLocaleString("id-ID") : "";
+    render();
+  });
+});
+["nama", "affPct"].forEach(id => $(id).addEventListener("input", render));
+$("pre").addEventListener("change", () => { $("tgPre").classList.toggle("on", $("pre").checked); render(); });
+$("aff").addEventListener("change", () => {
+  const on = $("aff").checked;
+  $("tgAff").classList.toggle("on", on);
+  $("affBox").classList.toggle("show", on);
+  if (on) $("affPct").focus();
+  render();
+});
+
+$("reset").addEventListener("click", () => {
+  ["nama", "modal", "harga", "bll", "ops"].forEach(id => $(id).value = "");
+  $("pre").checked = false; $("aff").checked = false; $("affPct").value = "1";
+  $("tgPre").classList.remove("on"); $("tgAff").classList.remove("on"); $("affBox").classList.remove("show");
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+/* ---- Toast ---- */
+let toastTimer;
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+/* ---- Gambar struk (digambar manual di canvas, jadi tetap jalan offline) ---- */
+const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const MONO = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace';
+
+function buatGambar(d, nama) {
+  const W = 680, P = 32, ROW = 46, SCALE = 2;
+  const C = { paper: "#fffdf6", band: "#f3ecd9", line: "#e4dcc3", ink: "#1b1a15", muted: "#7a7561", red: "#c4372b", green: "#2a8a4a" };
+
+  const rows = [];
+  rows.push({ t: "row", l: "Harga jual", r: rp(d.harga), bold: true });
+  rows.push({ t: "sec", l: "POTONGAN TIKTOK" });
+  d.potTikTok.forEach(x => rows.push({ t: "row", l: x.label, r: rpNeg(x.amt), neg: true }));
+  rows.push({ t: "row", l: "Total potongan TikTok", r: rpNeg(d.totalTikTok), neg: true, bold: true });
+  rows.push({ t: "row", l: "Cair", r: rp(d.cair), bold: true, band: true });
+  rows.push({ t: "sec", l: "MODAL & POTONGAN PRIBADI" });
+  rows.push({ t: "row", l: "Modal barang", r: rpNeg(d.modal), neg: true });
+  rows.push({ t: "row", l: "Biaya BLL", r: rpNeg(d.bll), neg: true });
+  rows.push({ t: "row", l: "Biaya operasional", r: rpNeg(d.ops), neg: true });
+  rows.push({ t: "row", l: "Total potongan pribadi", r: rpNeg(d.totalPribadi), neg: true, bold: true });
+
+  const HEAD = 96, SEC = 40, FINAL = 92, FOOT = 64;
+  const bodyH = rows.reduce((s, r) => s + (r.t === "sec" ? SEC : ROW), 0);
+  const H = HEAD + bodyH + FINAL + FOOT + P;
+
+  const cv = document.createElement("canvas");
+  cv.width = W * SCALE; cv.height = H * SCALE;
+  const g = cv.getContext("2d");
+  g.scale(SCALE, SCALE);
+  g.fillStyle = C.paper; g.fillRect(0, 0, W, H);
+
+  const fit = (txt, font, max) => {
+    g.font = font;
+    if (g.measureText(txt).width <= max) return txt;
+    while (txt.length > 1 && g.measureText(txt + "…").width > max) txt = txt.slice(0, -1);
+    return txt + "…";
+  };
+  const dash = (y) => {
+    g.strokeStyle = C.line; g.lineWidth = 1.5; g.setLineDash([4, 4]);
+    g.beginPath(); g.moveTo(P, y); g.lineTo(W - P, y); g.stroke(); g.setLineDash([]);
+  };
+
+  // Judul
+  g.textBaseline = "alphabetic"; g.textAlign = "left";
+  g.fillStyle = C.ink;
+  g.fillText(fit(nama || "Kalkulator Tiktok", `800 30px ${FONT}`, W - P * 2), P, 54);
+  g.font = `400 15px ${FONT}`; g.fillStyle = C.muted;
+  const tgl = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+  g.fillText(`Kalkulator Tiktok · ${tgl}`, P, 80);
+
+  let y = HEAD;
+  dash(y);
+  rows.forEach(r => {
+    if (r.t === "sec") {
+      g.font = `600 13px ${MONO}`; g.fillStyle = C.muted; g.textAlign = "right";
+      g.fillText(r.l.split("").join("\u200A"), W - P, y + 26);
+      g.textAlign = "left";
+      y += SEC;
+      return;
+    }
+    if (r.band) { g.fillStyle = C.band; g.fillRect(P - 12, y, W - P * 2 + 24, ROW); }
+    const base = y + 29;
+    g.fillStyle = C.ink;
+    g.font = `${r.bold ? 700 : 400} 19px ${FONT}`;
+    g.textAlign = "left";
+    g.fillText(fit(r.l, g.font, W - P * 2 - 190), P, base);
+    g.fillStyle = r.neg ? C.red : C.ink;
+    g.font = `${r.bold ? 700 : 500} 19px ${FONT}`;
+    g.textAlign = "right";
+    g.fillText(r.r, W - P, base);
+    g.textAlign = "left";
+    y += ROW;
+    dash(y);
+  });
+
+  // Untung bersih
+  const loss = d.untung < 0;
+  g.fillStyle = C.ink; g.font = `800 24px ${FONT}`;
+  g.fillText(loss ? "Rugi bersih" : "Untung bersih", P, y + 44);
+  g.fillStyle = C.muted; g.font = `400 14px ${FONT}`;
+  g.fillText("Cair − modal − potongan pribadi", P, y + 68);
+  g.fillStyle = loss ? C.red : C.green; g.font = `800 32px ${FONT}`; g.textAlign = "right";
+  g.fillText((loss ? "- " : "") + rp(d.untung), W - P, y + 56);
+  g.textAlign = "left";
+  y += FINAL;
+
+  // Footer
+  const marginTxt = (Math.round(d.margin * 10) / 10).toString().replace(".", ",");
+  g.fillStyle = C.muted; g.font = `400 15px ${FONT}`;
+  let foot = `Margin ${marginTxt}% dari harga jual`;
+  if (d.minJual) foot += ` · Harga jual minimal agar tidak rugi: ${rp(d.minJual)}`;
+  const words = foot.split(" "); let line = "", ly = y + 8;
+  words.forEach(w => {
+    const test = line ? line + " " + w : w;
+    if (g.measureText(test).width > W - P * 2 && line) { g.fillText(line, P, ly); ly += 22; line = w; }
+    else line = test;
+  });
+  g.fillText(line, P, ly);
+
+  return cv;
+}
+
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+$("save").addEventListener("click", async () => {
+  const d = hitung();
+  const nama = $("nama").value.trim();
+  if (d.harga <= 0) { toast("Isi harga jual dulu"); $("harga").focus(); return; }
+  if (!nama) { toast("Isi nama produk dulu, dipakai untuk nama file"); $("nama").focus(); return; }
+
+  const cv = buatGambar(d, nama);
+  const fileName = nama.replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 80) + ".png";
+  const blob = await new Promise(res => cv.toBlob(res, "image/png"));
+  const file = new File([blob], fileName, { type: "image/png" });
+
+  // iPhone/iPad: lewat menu bagikan supaya bisa "Simpan Gambar" ke Foto / Berkas
+  if (isIOS && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: nama }); toast("Pilih “Simpan Gambar” atau “Simpan ke Berkas”"); }
+    catch (e) { if (e.name !== "AbortError") toast("Gagal menyimpan gambar"); }
+    return;
+  }
+  // Android & desktop: unduh langsung
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = fileName;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  toast("Tersimpan: " + fileName);
+});
+
+/* ---- Pasang sebagai aplikasi ---- */
+const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+let deferredPrompt = null;
+function showInstall(text, withBtn) {
+  if (standalone || sessionStorage.getItem("hideInstall")) return;
+  $("installText").textContent = text;
+  $("installBtn").style.display = withBtn ? "inline-block" : "none";
+  $("install").classList.add("show");
+}
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault(); deferredPrompt = e;
+  showInstall("Pasang Kalkulator Tiktok di layar utama supaya bisa dibuka seperti aplikasi.", true);
+});
+$("installBtn").addEventListener("click", async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt(); await deferredPrompt.userChoice;
+  deferredPrompt = null; $("install").classList.remove("show");
+});
+$("installClose").addEventListener("click", () => {
+  $("install").classList.remove("show");
+  try { sessionStorage.setItem("hideInstall", "1"); } catch (e) {}
+});
+if (isIOS && !standalone) {
+  showInstall("Untuk memasang di iPhone: ketuk tombol Bagikan di Safari, lalu pilih “Tambah ke Layar Utama”.", false);
+}
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+
+render();
+</script>
+</body>
+</html>
